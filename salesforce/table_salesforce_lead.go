@@ -31,7 +31,6 @@ func SalesforceLead(ctx context.Context, dm dynamicMap, config salesforceConfig)
 
 			// Other columns
 			{Name: "address", Type: proto.ColumnType_JSON, Description: "Street address for the lead."},
-			{Name: "annual_revenue", Type: proto.ColumnType_DOUBLE, Description: "Annual revenue for the lead's company."},
 			{Name: "company", Type: proto.ColumnType_STRING, Description: "The lead's company."},
 			{Name: "converted_date", Type: proto.ColumnType_TIMESTAMP, Description: "Date on which this lead was converted."},
 			{Name: "created_by_id", Type: proto.ColumnType_STRING, Description: "Id of the user who created the lead."},

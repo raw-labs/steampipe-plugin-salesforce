@@ -34,7 +34,6 @@ func SalesforceOpportunity(ctx context.Context, dm dynamicMap, config salesforce
 			{Name: "created_by_id", Type: proto.ColumnType_STRING, Description: "Id of the user who created the opportunity."},
 			{Name: "created_date", Type: proto.ColumnType_TIMESTAMP, Description: "The creation date and time of the opportunity."},
 			{Name: "description", Type: proto.ColumnType_STRING, Description: "Description of the opportunity."},
-			{Name: "expected_revenue", Type: proto.ColumnType_DOUBLE, Description: "Calculated revenue based on the Amount and Probability fields."},
 			{Name: "fiscal_quarter", Type: proto.ColumnType_INT, Description: "Represents the fiscal quarter. Valid values are 1, 2, 3, or 4."},
 			{Name: "fiscal_year", Type: proto.ColumnType_INT, Description: "Represents the fiscal year, for example, 2006."},
 			{Name: "forecast_category", Type: proto.ColumnType_STRING, Description: "Forecast category name displayed in reports, opportunity detail and edit pages, opportunity searches, and opportunity list views."},
@@ -44,7 +43,6 @@ func SalesforceOpportunity(ctx context.Context, dm dynamicMap, config salesforce
 			{Name: "has_overdue_task", Type: proto.ColumnType_BOOL, Description: "Indicates whether an opportunity has an overdue task (true) or not (false)."},
 			{Name: "is_closed", Type: proto.ColumnType_BOOL, Description: "Indicates that the opportunity is closed."},
 			{Name: "is_deleted", Type: proto.ColumnType_BOOL, Description: "Indicates that the opportunity is deleted."},
-			{Name: "is_private", Type: proto.ColumnType_BOOL, Description: "Indicates that the opportunity is private."},
 			{Name: "is_won", Type: proto.ColumnType_BOOL, Description: "Indicates that the quote or proposal has been signed or electronically accepted."},
 			{Name: "last_activity_date", Type: proto.ColumnType_TIMESTAMP, Description: "Value is one of the following, whichever is the most recent of a) Due date of the most recent event logged against the record or b) Due date of the most recently closed task associated with the record."},
 			{Name: "last_modified_by_id", Type: proto.ColumnType_STRING, Description: "The id of the user who last modified the oppurtinity record."},
@@ -55,7 +53,6 @@ func SalesforceOpportunity(ctx context.Context, dm dynamicMap, config salesforce
 			{Name: "probability", Type: proto.ColumnType_DOUBLE, Description: "Percentage of estimated confidence in closing the opportunity."},
 			{Name: "stage_name", Type: proto.ColumnType_STRING, Description: "Current stage of opportunity."},
 			{Name: "system_modstamp", Type: proto.ColumnType_STRING, Description: "The date and time when opportunity was last modified by a user or by an automated process."},
-			{Name: "total_opportunity_quantity", Type: proto.ColumnType_STRING, Description: "Number of items included in this opportunity. Used in quantity-based forecasting."},
 			{Name: "type", Type: proto.ColumnType_STRING, Description: "Type of opportunity, such as Existing Business or New Business."},
 		}),
 	}
