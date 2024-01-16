@@ -5,8 +5,245 @@ on:
     tags:
       - 'v*'
         
-
 jobs:
-  anywhere_publish_workflow:
-    uses: turbot/steampipe-workflows/.github/workflows/steampipe-anywhere.yml@main
-    secrets: inherit
+  build-postgres-15-fdw-linux-amd64:
+    name: Build Postgres 15 FDW for Linux - AMD64
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set environment variables
+        run: |
+          plugin_name=$(echo $GITHUB_REPOSITORY | cut -d'-' -f 3)
+          echo $plugin_name
+          echo "PLUGIN_NAME=${plugin_name}" >> $GITHUB_ENV
+
+      - name: Check out steampipe-postgres-fdw
+        uses: actions/checkout@v4
+        with:
+          repository: "turbot/steampipe-postgres-fdw"
+          ref: main
+
+      - uses: actions/setup-go@v4
+        with:
+          go-version: 1.21
+
+      - name: Setup apt-get
+        run: |-
+          sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+          wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+          sudo env ACCEPT_EULA=Y apt-get update
+          sudo env ACCEPT_EULA=Y apt-get upgrade
+          sudo apt-get -y install postgresql-server-dev-15
+
+      - name: Find stuff and set env
+        run: |-
+
+          which pg_config
+          pg_config --version
+
+          export PATH=$(pg_config --bindir):$PATH
+          export PGXS=$(pg_config --pgxs)
+
+          export SERVER_LIB=$(pg_config --includedir)/15/server
+          export INTERNAL_LIB=$(pg_config --includedir)/internal
+
+          export CFLAGS="$(pg_config --cflags) -I${SERVER_LIB} -I${INTERNAL_LIB} -g"
+          export PG_CFLAGS="$(pg_config --cflags) -I${SERVER_LIB} -I${INTERNAL_LIB} -g"
+
+          export LDFLAGS=$(pg_config --ldflags)
+          export PG_LDFLAGS=$(pg_config --ldflags)
+
+          ls -la $SERVER_LIB
+          ls -la $INTERNAL_LIB
+
+      - name: Build steampipe-postgres-fdw-anywhere
+        run: |
+          pwd
+          ls -ltr
+          make standalone plugin=${{ env.PLUGIN_NAME }}
+          ls -ltr
+
+      - name: Rename and zip the build-Linux folder
+        run: |-
+          mv build-Linux steampipe_postgres_${{ env.PLUGIN_NAME }}.pg15.linux_amd64
+          tar -czvf steampipe_postgres_${{ env.PLUGIN_NAME }}.pg15.linux_amd64.tar.gz steampipe_postgres_${{ env.PLUGIN_NAME }}.pg15.linux_amd64
+
+      - name: Save Linux Build Artifact - AMD64
+        uses: actions/upload-artifact@v3
+        with:
+          name: steampipe_postgres_${{ env.PLUGIN_NAME }}.pg15.linux_amd64.tar.gz
+          path: steampipe_postgres_${{ env.PLUGIN_NAME }}.pg15.linux_amd64.tar.gz
+          if-no-files-found: error
+
+
+  build-sqlite-extension-linux-amd64:
+    name: Build SQLite Extension for Linux - AMD64
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set environment variables
+        run: |
+          plugin_name=$(echo $GITHUB_REPOSITORY | cut -d'-' -f 3)
+          echo $plugin_name
+          echo "PLUGIN_NAME=${plugin_name}" >> $GITHUB_ENV
+
+      - name: Check out steampipe-sqlite-extension
+        uses: actions/checkout@v2
+        with:
+          repository: "turbot/steampipe-sqlite-extension"
+          ref: main
+
+      - name: Setup GoLang
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.21
+
+      - name: Build steampipe-sqlite-extension
+        run: |
+          pwd
+          ls -ltr
+          make build plugin=${{ env.PLUGIN_NAME }}
+          ls -ltr
+
+      - name: Zip and rename the steampipe_sqlite_${{ env.PLUGIN_NAME }}.so
+        run: |-
+          tar -czvf steampipe_sqlite_${{ env.PLUGIN_NAME }}.linux_amd64.tar.gz steampipe_sqlite_${{ env.PLUGIN_NAME }}.so
+
+      - name: Save Linux Build Artifact - AMD64
+        uses: actions/upload-artifact@v3
+        with:
+          name: steampipe_sqlite_${{ env.PLUGIN_NAME }}.linux_amd64.tar.gz
+          path: steampipe_sqlite_${{ env.PLUGIN_NAME }}.linux_amd64.tar.gz
+          if-no-files-found: error
+
+  build-export-tool:
+    name: Build Export Tool
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set environment variables
+        run: |
+          plugin_name=$(echo $GITHUB_REPOSITORY | cut -d'-' -f 3)
+          echo $plugin_name
+          echo "PLUGIN_NAME=${plugin_name}" >> $GITHUB_ENV
+
+      - name: Check out steampipe-table-dump
+        uses: actions/checkout@v2
+        with:
+          repository: "turbot/steampipe-table-dump"
+          ref: main
+
+      - name: Setup GoLang
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.21
+
+      - name: Build steampipe-table-dump
+        run: |
+          pwd
+          ls -ltr
+          make build plugin=${{ env.PLUGIN_NAME }}
+          ls -ltr
+          go mod tidy
+
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v5
+        with:
+          version: latest
+          args: release --snapshot --skip-publish --rm-dist
+
+      - name: Copy the gzipped binaries from dist
+        run: |-
+          ls -al dist/
+          cp dist/steampipe_export_${{ env.PLUGIN_NAME }}.linux_amd64.tar.gz steampipe_export_${{ env.PLUGIN_NAME }}.linux_amd64.tar.gz
+          cp dist/steampipe_export_${{ env.PLUGIN_NAME }}.linux_arm64.tar.gz steampipe_export_${{ env.PLUGIN_NAME }}.linux_arm64.tar.gz
+          cp dist/steampipe_export_${{ env.PLUGIN_NAME }}.darwin_amd64.tar.gz steampipe_export_${{ env.PLUGIN_NAME }}.darwin_amd64.tar.gz
+          cp dist/steampipe_export_${{ env.PLUGIN_NAME }}.darwin_arm64.tar.gz steampipe_export_${{ env.PLUGIN_NAME }}.darwin_arm64.tar.gz
+          ls -al
+
+      - name: Save Linux Build Artifact - AMD64
+        uses: actions/upload-artifact@v3
+        with:
+          name: steampipe_export_${{ env.PLUGIN_NAME }}.linux_amd64.tar.gz
+          path: steampipe_export_${{ env.PLUGIN_NAME }}.linux_amd64.tar.gz
+          if-no-files-found: error
+
+      - name: Save Linux Build Artifact - ARM64
+        uses: actions/upload-artifact@v3
+        with:
+          name: steampipe_export_${{ env.PLUGIN_NAME }}.linux_arm64.tar.gz
+          path: steampipe_export_${{ env.PLUGIN_NAME }}.linux_arm64.tar.gz
+          if-no-files-found: error
+
+      - name: Save Darwin Build Artifact - AMD64
+        uses: actions/upload-artifact@v3
+        with:
+          name: steampipe_export_${{ env.PLUGIN_NAME }}.darwin_amd64.tar.gz
+          path: steampipe_export_${{ env.PLUGIN_NAME }}.darwin_amd64.tar.gz
+          if-no-files-found: error
+
+      - name: Save Darwin Build Artifact - ARM64
+        uses: actions/upload-artifact@v3
+        with:
+          name: steampipe_export_${{ env.PLUGIN_NAME }}.darwin_arm64.tar.gz
+          path: steampipe_export_${{ env.PLUGIN_NAME }}.darwin_arm64.tar.gz
+          if-no-files-found: error
+
+  build-draft-release:
+    name: Build Draft Release
+    runs-on: ubuntu-latest
+    needs:
+      # Postgres 15
+      - build-postgres-15-fdw-linux-amd64
+      # SQLite
+      - build-sqlite-extension-linux-amd64
+      # Export
+      - build-export-tool
+    steps:
+      - name: Set environment variables
+        run: |
+          plugin_name=$(echo $GITHUB_REPOSITORY | cut -d'-' -f 3)
+          echo $plugin_name
+          echo "PLUGIN_NAME=${plugin_name}" >> $GITHUB_ENV
+
+      - name: Download steampipe_postgres_${{ env.PLUGIN_NAME }}.pg15.linux_amd64.tar.gz
+        id: download_pg15_linux_amd64
+        uses: actions/download-artifact@v3
+        with:
+          name: steampipe_postgres_${{ env.PLUGIN_NAME }}.pg15.linux_amd64.tar.gz
+
+      - name: Download steampipe_sqlite_${{ env.PLUGIN_NAME }}.linux_amd64.tar.gz
+        id: download_sqlite_linux_amd64
+        uses: actions/download-artifact@v3
+        with:
+          name: steampipe_sqlite_${{ env.PLUGIN_NAME }}.linux_amd64.tar.gz
+
+      - name: Download steampipe_export_${{ env.PLUGIN_NAME }}.linux_amd64.tar.gz
+        id: download_export_linux_amd64
+        uses: actions/download-artifact@v3
+        with:
+          name: steampipe_export_${{ env.PLUGIN_NAME }}.linux_amd64.tar.gz
+
+      - name: Check Path
+        run: |-
+          ls -la
+
+      - name: Get latest version tag
+        run: |-
+          echo "VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+          trim=${VERSION#"v"}
+          echo $trim
+          echo "VERSION=${trim}" >> $GITHUB_ENV
+          
+      - name: Create a draft release
+        uses: softprops/action-gh-release@v1
+        id: create_draft_release
+        with:
+          draft: true
+          name: ${{ env.VERSION }}
+          tag_name: ${{ env.VERSION }}
+          repository: ${{ github.repository }}
+          files: |-
+            ${{ steps.download_pg15_linux_amd64.outputs.download-path }}/steampipe_postgres_${{ env.PLUGIN_NAME }}.pg15.linux_amd64.tar.gz
+            ${{ steps.download_sqlite_linux_amd64.outputs.download-path }}/steampipe_sqlite_${{ env.PLUGIN_NAME }}.linux_amd64.tar.gz
+            ${{ steps.download_export_linux_amd64.outputs.download-path }}/steampipe_export_${{ env.PLUGIN_NAME }}.linux_amd64.tar.gz
