@@ -24,7 +24,6 @@ func SalesforceAccount(ctx context.Context, dm dynamicMap, config salesforceConf
 			// Top columns
 			{Name: "id", Type: proto.ColumnType_STRING, Description: "Unique identifier of the account in Salesforce."},
 			{Name: "name", Type: proto.ColumnType_STRING, Description: "Name of the account."},
-			{Name: "annual_revenue", Type: proto.ColumnType_DOUBLE, Description: "Estimated annual revenue of the account."},
 			{Name: "industry", Type: proto.ColumnType_STRING, Description: "Primary business of account."},
 			{Name: "owner_id", Type: proto.ColumnType_STRING, Description: "The ID of the user who currently owns this account. Default value is the user logged in to the API to perform the create."},
 			{Name: "type", Type: proto.ColumnType_STRING, Description: "Type of account, for example, Customer, Competitor, or Partner."},
