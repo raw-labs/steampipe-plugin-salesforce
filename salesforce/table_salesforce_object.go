@@ -23,7 +23,10 @@ func listSalesforceObjectsByTable(tableName string, salesforceCols map[string]st
 			return nil, fmt.Errorf("salesforce.listSalesforceObjectsByTable: client_not_found, unable to query table %s because of invalid steampipe salesforce configuration", d.Table.Name)
 		}
 
-		query := generateQuery(d.Table.Columns, tableName)
+		requestedCols := getMatchingColumns(d.Table, d.QueryContext.Columns)
+		plugin.Logger(ctx).Debug("salesforce.listSalesforceObjectsByTable", "requested_columns", requestedCols)
+
+		query := generateQuery(requestedCols, tableName)
 		condition := buildQueryFromQuals(d.Quals, d.Table.Columns, salesforceCols)
 		if condition != "" {
 			query = fmt.Sprintf("%s where %s", query, condition)
@@ -37,15 +40,15 @@ func listSalesforceObjectsByTable(tableName string, salesforceCols map[string]st
 				return nil, err
 			}
 
-			AccountList := new([]map[string]interface{})
-			err = decodeQueryResult(ctx, result.Records, AccountList)
+			objectList := new([]map[string]interface{})
+			err = decodeQueryResult(ctx, result.Records, objectList)
 			if err != nil {
 				plugin.Logger(ctx).Error("salesforce.listSalesforceObjectsByTable", "results decoding error", err)
 				return nil, err
 			}
 
-			for _, account := range *AccountList {
-				d.StreamListItem(ctx, account)
+			for _, object := range *objectList {
+				d.StreamListItem(ctx, object)
 			}
 
 			// Paging
@@ -116,4 +119,21 @@ func getFieldFromSObjectMapByColumnName(ctx context.Context, d *transform.Transf
 	salesforceColumnName := getSalesforceColumnName(d.ColumnName)
 	ls := d.HydrateItem.(map[string]interface{})
 	return ls[salesforceColumnName], nil
+}
+
+func getMatchingColumns(table *plugin.Table, columnNames []string) []*plugin.Column {
+	var matchingColumns []*plugin.Column
+
+	columnMap := make(map[string]*plugin.Column)
+	for _, col := range table.Columns {
+		columnMap[col.Name] = col
+	}
+
+	for _, colName := range columnNames {
+		if col, found := columnMap[colName]; found {
+			matchingColumns = append(matchingColumns, col)
+		}
+	}
+
+	return matchingColumns
 }
