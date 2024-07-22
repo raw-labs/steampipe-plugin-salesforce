@@ -32,6 +32,10 @@ func listSalesforceObjectsByTable(tableName string, salesforceCols map[string]st
 			query = fmt.Sprintf("%s where %s", query, condition)
 			plugin.Logger(ctx).Debug("salesforce.listSalesforceObjectsByTable", "table_name", d.Table.Name, "query_condition", condition)
 		}
+		if d.QueryContext.Limit != nil {
+			limit := int32(*d.QueryContext.Limit)
+			query = fmt.Sprintf("%s limit %d", query, limit)
+		}
 
 		for {
 			result, err := client.Query(query)
