@@ -35,7 +35,7 @@ func SalesforceUser(ctx context.Context, dm dynamicMap, config salesforceConfig)
 			{Name: "department", Type: proto.ColumnType_STRING, Description: "The company department associated with the user."},
 			{Name: "employee_number", Type: proto.ColumnType_STRING, Description: "The user's employee number."},
 			{Name: "forecast_enabled", Type: proto.ColumnType_BOOL, Description: "Indicates whether the user is enabled as a forecast manager (true) or not (false)."},
-			{Name: "last_login_date", Type: proto.ColumnType_TIMESTAMP, Description: "The date and time when the user last successfully logged in. This value is updated if 60 seconds elapses since the user's last login."},
+			{Name: "last_login_date", Type: proto.ColumnType_TIMESTAMP, Description: "The date and time when the user last successfully logged in. This value is updated if 60 seconds elapses since the user's last login.", Sort: plugin.SortAll},
 			{Name: "last_modified_by_id", Type: proto.ColumnType_STRING, Description: "Id of the user who last changed the user fields, including modification date and time."},
 			{Name: "profile_id", Type: proto.ColumnType_STRING, Description: "ID of the user's Profile."},
 			{Name: "state", Type: proto.ColumnType_STRING, Description: "The state associated with the User."},

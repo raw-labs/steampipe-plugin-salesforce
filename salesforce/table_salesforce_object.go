@@ -28,10 +28,36 @@ func listSalesforceObjectsByTable(tableName string, salesforceCols map[string]st
 
 		query := generateQuery(requestedCols, tableName)
 		condition := buildQueryFromQuals(d.Quals, d.Table.Columns, salesforceCols)
+
+		// Push down WHERE
 		if condition != "" {
 			query = fmt.Sprintf("%s where %s", query, condition)
 			plugin.Logger(ctx).Debug("salesforce.listSalesforceObjectsByTable", "table_name", d.Table.Name, "query_condition", condition)
 		}
+
+		// Push down ORDER BY
+		if d.QueryContext.SortOrder != nil && len(d.QueryContext.SortOrder) > 0 {
+			var parts []string
+			for _, sc := range d.QueryContext.SortOrder {
+				var order string
+				switch sc.Order {
+				case plugin.SortAsc:
+					order = "ASC"
+				case plugin.SortDesc:
+					order = "DESC"
+				default:
+					order = ""
+				}
+				if order != "" {
+					parts = append(parts, fmt.Sprintf("%s %s", getSalesforceColumnName(sc.Column), order))
+				}
+			}
+			if len(parts) > 0 {
+				query = fmt.Sprintf("%s order by %s", query, strings.Join(parts, ","))
+			}
+		}
+
+		// Push down LIMIT
 		if d.QueryContext.Limit != nil {
 			limit := int32(*d.QueryContext.Limit)
 			query = fmt.Sprintf("%s limit %d", query, limit)

@@ -318,6 +318,7 @@ func dynamicColumns(ctx context.Context, client *simpleforce.Client, salesforceT
 			keyColumns = append(keyColumns, &plugin.KeyColumn{Name: columnFieldName, Require: plugin.Optional, Operators: []string{"=", "<>"}})
 		case "date", "dateTime":
 			column.Type = proto.ColumnType_TIMESTAMP
+			column.Sort = plugin.SortAll
 			keyColumns = append(keyColumns, &plugin.KeyColumn{Name: columnFieldName, Require: plugin.Optional, Operators: []string{"=", ">", ">=", "<=", "<"}})
 		case "boolean":
 			column.Type = proto.ColumnType_BOOL

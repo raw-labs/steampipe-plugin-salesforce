@@ -31,11 +31,11 @@ func SalesforceAccount(ctx context.Context, dm dynamicMap, config salesforceConf
 			// Other columns
 			{Name: "account_source", Type: proto.ColumnType_STRING, Description: "The source of the account record. For example, Advertisement, Data.com, or Trade Show."},
 			{Name: "created_by_id", Type: proto.ColumnType_STRING, Description: "The id of the user who created the account."},
-			{Name: "created_date", Type: proto.ColumnType_TIMESTAMP, Description: "The creation date and time of the account."},
+			{Name: "created_date", Type: proto.ColumnType_TIMESTAMP, Description: "The creation date and time of the account.", Sort: plugin.SortAll},
 			{Name: "description", Type: proto.ColumnType_STRING, Description: "Text description of the account."},
 			{Name: "is_deleted", Type: proto.ColumnType_BOOL, Description: "Indicates whether the object has been moved to the Recycle Bin (true) or not (false)."},
 			{Name: "last_modified_by_id", Type: proto.ColumnType_STRING, Description: "The id of the user who last changed the contact fields, including modification date and time."},
-			{Name: "last_modified_date", Type: proto.ColumnType_TIMESTAMP, Description: "The date and time of last modification to account."},
+			{Name: "last_modified_date", Type: proto.ColumnType_TIMESTAMP, Description: "The date and time of last modification to account.", Sort: plugin.SortAll},
 			{Name: "number_of_employees", Type: proto.ColumnType_DOUBLE, Description: "Number of employees working at the company represented by this account."},
 			{Name: "phone", Type: proto.ColumnType_STRING, Description: "The contact's primary phone number."},
 			{Name: "website", Type: proto.ColumnType_STRING, Description: "The website of this account, for example, www.acme.com."},

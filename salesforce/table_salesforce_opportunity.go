@@ -30,9 +30,9 @@ func SalesforceOpportunity(ctx context.Context, dm dynamicMap, config salesforce
 
 			// Other columns
 			{Name: "campaign_id", Type: proto.ColumnType_STRING, Description: "ID of a related Campaign. This field is defined only for those organizations that have the campaign feature Campaigns enabled."},
-			{Name: "close_date", Type: proto.ColumnType_TIMESTAMP, Description: "Date when the opportunity is expected to close."},
+			{Name: "close_date", Type: proto.ColumnType_TIMESTAMP, Description: "Date when the opportunity is expected to close.", Sort: plugin.SortAll},
 			{Name: "created_by_id", Type: proto.ColumnType_STRING, Description: "Id of the user who created the opportunity."},
-			{Name: "created_date", Type: proto.ColumnType_TIMESTAMP, Description: "The creation date and time of the opportunity."},
+			{Name: "created_date", Type: proto.ColumnType_TIMESTAMP, Description: "The creation date and time of the opportunity.", Sort: plugin.SortAll},
 			{Name: "description", Type: proto.ColumnType_STRING, Description: "Description of the opportunity."},
 			{Name: "fiscal_quarter", Type: proto.ColumnType_INT, Description: "Represents the fiscal quarter. Valid values are 1, 2, 3, or 4."},
 			{Name: "fiscal_year", Type: proto.ColumnType_INT, Description: "Represents the fiscal year, for example, 2006."},
@@ -44,9 +44,9 @@ func SalesforceOpportunity(ctx context.Context, dm dynamicMap, config salesforce
 			{Name: "is_closed", Type: proto.ColumnType_BOOL, Description: "Indicates that the opportunity is closed."},
 			{Name: "is_deleted", Type: proto.ColumnType_BOOL, Description: "Indicates that the opportunity is deleted."},
 			{Name: "is_won", Type: proto.ColumnType_BOOL, Description: "Indicates that the quote or proposal has been signed or electronically accepted."},
-			{Name: "last_activity_date", Type: proto.ColumnType_TIMESTAMP, Description: "Value is one of the following, whichever is the most recent of a) Due date of the most recent event logged against the record or b) Due date of the most recently closed task associated with the record."},
+			{Name: "last_activity_date", Type: proto.ColumnType_TIMESTAMP, Description: "Value is one of the following, whichever is the most recent of a) Due date of the most recent event logged against the record or b) Due date of the most recently closed task associated with the record.", Sort: plugin.SortAll},
 			{Name: "last_modified_by_id", Type: proto.ColumnType_STRING, Description: "The id of the user who last modified the oppurtinity record."},
-			{Name: "last_modified_date", Type: proto.ColumnType_TIMESTAMP, Description: "The data and time of the last modification of the oppurtinity record."},
+			{Name: "last_modified_date", Type: proto.ColumnType_TIMESTAMP, Description: "The data and time of the last modification of the oppurtinity record.", Sort: plugin.SortAll},
 			{Name: "lead_source", Type: proto.ColumnType_STRING, Description: "Source of this opportunity, such as Advertisement or Trade Show."},
 			{Name: "next_step", Type: proto.ColumnType_STRING, Description: "Description of next task in closing opportunity."},
 			{Name: "pricebook_2_id", Type: proto.ColumnType_STRING, Description: "ID of a related Pricebook2 object. The Pricebook2Id field indicates which Pricebook2 applies to this opportunity. The Pricebook2Id field is defined only for those organizations that have products enabled as a feature."},
